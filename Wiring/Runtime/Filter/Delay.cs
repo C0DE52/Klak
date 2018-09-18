@@ -21,6 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
+using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -46,7 +47,7 @@ namespace Klak.Wiring
         [Inlet]
         public void Trigger()
         {
-            _timeQueue.Enqueue(CurrentTime);
+            StartCoroutine( DoTrigger() );
         }
 
         [SerializeField, Outlet]
@@ -56,26 +57,17 @@ namespace Klak.Wiring
 
         #region Private members
 
-        Queue<float> _timeQueue = new Queue<float>();
-
-        float CurrentTime {
-            get {
-                return _timeUnit == TimeUnit.Second ? Time.time : Time.frameCount;
-            }
-        }
-
-        #endregion
-
-        #region MonoBehaviour functions
-
-        void Update()
+        private IEnumerator DoTrigger()
         {
-            while (_timeQueue.Count > 0 &&
-                   _timeQueue.Peek() + _interval < CurrentTime)
+            if( _timeUnit == TimeUnit.Second )
+                yield return new WaitForSeconds( _interval );
+            else
             {
-                _outputEvent.Invoke();
-                _timeQueue.Dequeue();
+                for( int frameCounter = Mathf.RoundToInt( _interval ); --frameCounter >= 0; )
+                    yield return new WaitForEndOfFrame();
             }
+
+            _outputEvent.Invoke();
         }
 
         #endregion

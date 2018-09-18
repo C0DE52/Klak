@@ -39,6 +39,8 @@ namespace Klak.Wiring.Patcher
         public static Type GetEventDataType(Type eventType)
         {
             if (typeof(UnityEvent<float     >).IsAssignableFrom(eventType)) return typeof(float);
+            if (typeof(UnityEvent<int       >).IsAssignableFrom(eventType)) return typeof(int);
+            if (typeof(UnityEvent<string    >).IsAssignableFrom(eventType)) return typeof(string);
             if (typeof(UnityEvent<Vector3   >).IsAssignableFrom(eventType)) return typeof(Vector3);
             if (typeof(UnityEvent<Quaternion>).IsAssignableFrom(eventType)) return typeof(Quaternion);
             if (typeof(UnityEvent<Color     >).IsAssignableFrom(eventType)) return typeof(Color);
@@ -80,6 +82,20 @@ namespace Klak.Wiring.Patcher
                     );
                     return true;
                 }
+                if (actionType == typeof(UnityAction<int>))
+                {
+                    UnityEventTools.AddIntPersistentListener(
+                        triggerEvent, (UnityAction<int>)targetAction, 0
+                    );
+                    return true;
+                }
+                if (actionType == typeof(UnityAction<string>))
+                {
+                    UnityEventTools.AddStringPersistentListener(
+                        triggerEvent, (UnityAction<string>)targetAction, ""
+                    );
+                    return true;
+                }
             }
             else if (triggerEvent is UnityEvent<float>)
             {
@@ -91,6 +107,34 @@ namespace Klak.Wiring.Patcher
                     UnityEventTools.AddPersistentListener(
                        (UnityEvent<float>)triggerEvent,
                        (UnityAction<float>)targetAction
+                    );
+                    return true;
+                }
+            }
+            else if (triggerEvent is UnityEvent<int>)
+            {
+                // The trigger event has a int parameter.
+                // Then the target method should have a int parameter too.
+                if (actionType == typeof(UnityAction<int>))
+                {
+                    // Add the action to the event.
+                    UnityEventTools.AddPersistentListener(
+                       (UnityEvent<int>)triggerEvent,
+                       (UnityAction<int>)targetAction
+                    );
+                    return true;
+                }
+            }
+            else if (triggerEvent is UnityEvent<string>)
+            {
+                // The trigger event has a string parameter.
+                // Then the target method should have a string parameter too.
+                if (actionType == typeof(UnityAction<string>))
+                {
+                    // Add the action to the event.
+                    UnityEventTools.AddPersistentListener(
+                       (UnityEvent<string>)triggerEvent,
+                       (UnityAction<string>)targetAction
                     );
                     return true;
                 }
@@ -195,6 +239,8 @@ namespace Klak.Wiring.Patcher
 
             // Returns one of the corrensponding action types.
             if (paramType == typeof(float     )) return typeof(UnityAction<float     >);
+            if (paramType == typeof(int       )) return typeof(UnityAction<int       >);
+            if (paramType == typeof(string    )) return typeof(UnityAction<string    >);
             if (paramType == typeof(Vector3   )) return typeof(UnityAction<Vector3   >);
             if (paramType == typeof(Quaternion)) return typeof(UnityAction<Quaternion>);
             if (paramType == typeof(Color     )) return typeof(UnityAction<Color     >);
